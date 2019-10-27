@@ -178,6 +178,8 @@ mv /ca/newcerts/xx.pem intra.euro.org.pem
 
 `mv <filename> <new_filename>` : komanda, kas paredzēta, lai pārvietotu, vai pārdefinētu faila nosaukumu
 
+`xx.pem` : xx aizvietot ar sertifikāta numuru rindas kārtībā
+
 ###### Kopēt sertifikātu uz tīmekļa serverim paredzēto datni
 
 ```
