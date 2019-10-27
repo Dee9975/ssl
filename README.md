@@ -88,3 +88,100 @@ openssl genrsa -out /ca/private/cakey.pem 4096
 openssl req -new -x509 –config /ca/openssl.cnf -key /ca/private/cakey.pem -out ../cacert.pem
 ```
 
+`req` : kommanda, kas izveido un apstrādā sertifikāta pieprasījumus `PKCS#10` formātā, vai mūsu gadījumā izveidot pašparakstītu sertifikātu.
+
+`-new` : jauns sertifikāts
+
+`-x509` : parametrs, kas norāda, ka jāveido pašparakstīts sertifikāts
+
+`-config <filename>` : norāda citu konfigurācijas failu
+
+`-key <filename>` : norāda failu, no kura lasīt atslēgu
+
+`-out <filename>` : norāda vietu, kur saglabāt uzģenerēto sertifikātu
+
+Ja komanda ievadīta korekti, parādīsies ievades lauki, kurus jāizpilda (šos laukus aizpildīt pēc saviem datiem):
+
+```
+Country Name (2 letter code) [AU]: HU
+State or Province Name (Full name) [Some-State]: HU
+Locality Name (eg, city) []: Budapest
+Organization Name (eg, company) [Internet Widgits Pty Ltd]: euro.org
+Organizational Unit Name (eg, section) []: HQ
+Common Name (e.g. server FQDN or YOUR name) []: hqfw.euro.org
+Email Address []: ca@euro.org
+```
+
+## 2) WEB serveris – atslēgas un sertifikāta parakstīšanas pieprasījuma ģenerēšana
+Tālākās darbības notiks web servera
+
+###### Izveidosim nepieciešamās datnes
+
+```
+cd /
+mkdir ssl
+cd ssl
+mkdir key cert csr
+```
+
+###### Uzģenerējam rsa atslēgu ar openssl
+
+```
+cd key
+openssl genrsa -out intra.euro.org 4096
+```
+
+###### Uzģenerējam jaunu sertifikāta pieprasījumu
+
+```
+cd ..
+cd csr
+openssl req -new -key /ssl/key/intra.euro.org –out ../csr/intra.euro.org.csr
+```
+
+###### Aizpildam ievades laukus
+
+```
+Country Name (2 letter code) [AU]: HU
+State or Province Name (Full name) [Some-State]: HU
+Locality Name (eg, city) []: Budapest
+Organization Name (eg, company) [Internet Widgits Pty Ltd]: euro.org
+Organizational Unit Name (eg, section) []: HQ
+Common Name (e.g. server FQDN or YOUR name) []: intra.euro.org
+Email Address []: admin@euro.org
+A challenge password []: Passw0rd
+An optional company name []: euro.org
+```
+
+## 3) Sertifikāta parakstīšana
+Šajā sadaļā mēs atgriežamies pie sākotnējā servera.
+
+###### Parakstīsim sertifikātu
+
+```
+openssl ca –config /ca/openssl.cnf –extfile /ca/openssl.cnf –extensions v3_req –infiles /ssl/csr/intra.euro.org.csr
+```
+
+`ca` : komanda, kas paredzēta sertifikātu parakstīšanai, piešķirto sertifikātu un to statusu datubāzes uzturēšanai
+
+`-extfile <filename>` : nolasa alternatīvo konfigurāciju
+
+`-extensions <extension>` : norāda sertifikāta paplašinājumu
+
+`-infiles <filename>` : norāda sertifikāta pieprasījumu sarakstu
+
+###### Pārsauksim ģenerēto sertifikātu lasāmākā un saprotamākā vārdā
+
+```
+mv /ca/newcerts/xx.pem intra.euro.org.pem
+```
+
+`mv <filename> <new_filename>` : komanda, kas paredzēta, lai pārvietotu, vai pārdefinētu faila nosaukumu
+
+###### Kopēt sertifikātu uz tīmekļa serverim paredzēto datni
+
+```
+cp /ca/newcerts/intra.euro.org.pem /ssl/cert/
+```
+
+Ja sekojāt līdzi bez kļūdām, tagad jums ir pašparakstīts ssl sertifikāts!
